@@ -1,7 +1,8 @@
-- 👋 Hi, I’m @Krisss215
-- 👀 I’m interested in programming
-- 🌱 I’m currently learning Java and C
-- 📫 How to reach me: inst @kri.sv
+- Hi, I’m @Krisss215
+- I’m interested in programming
+- I’m currently learning Java and C
+- I’m CyberSecurity Consultant
+- How to reach me: inst @kri.sv
 
 
 <!---
