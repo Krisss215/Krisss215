@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
-import { Lesson, Module } from '../types';
+import { Lesson, Stage } from '../types';
 import { TheoryLesson } from './TheoryLesson';
-import { Quiz } from './Quiz';
-import { Terminal } from './Terminal';
+import { QuizLesson } from './QuizLesson';
+import { TerminalLesson } from './TerminalLesson';
+
+const typeLabel: Record<string, string> = {
+  theory: '📖 Теория',
+  quiz: '🧠 Тест',
+  terminal: '💻 Терминал',
+  practice: '⚔️ Практика',
+};
 
 interface Props {
   lesson: Lesson;
-  module: Module;
-  lessonIndex: number;
+  stage: Stage;
+  lessonIdx: number;
   totalLessons: number;
   isCompleted: boolean;
   onComplete: () => void;
@@ -15,98 +22,79 @@ interface Props {
   onNext: () => void;
 }
 
-const typeLabel: Record<string, string> = {
-  theory: '📖 Теория',
-  quiz: '🧠 Тест',
-  terminal: '💻 Терминал',
-  challenge: '⚔️ Задание',
-};
-
 export const LessonView: React.FC<Props> = ({
-  lesson, module, lessonIndex, totalLessons, isCompleted, onComplete, onBack, onNext
+  lesson, stage, lessonIdx, totalLessons, isCompleted, onComplete, onBack, onNext
 }) => {
   const [done, setDone] = useState(isCompleted);
 
-  const handleComplete = (pts?: number) => {
+  const handleDone = () => {
     setDone(true);
     onComplete();
   };
 
+  const pct = ((lessonIdx + (done ? 1 : 0)) / totalLessons) * 100;
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="sticky top-0 z-10 bg-gray-900 border-b border-gray-800 px-4 py-3">
-        <div className="max-w-3xl mx-auto flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="text-gray-400 hover:text-white transition-colors flex items-center gap-1"
-          >
-            ← Назад
-          </button>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <span className={`px-2 py-0.5 rounded-full bg-gradient-to-r ${module.color} text-white`}>
-                {module.icon} {module.title}
-              </span>
-              <span>·</span>
-              <span>{typeLabel[lesson.type] || lesson.type}</span>
-              <span>·</span>
-              <span>{lessonIndex + 1}/{totalLessons}</span>
+    <div className="min-h-screen bg-gray-950 flex flex-col">
+      {/* Top bar */}
+      <div className="sticky top-0 z-20 bg-gray-900 border-b border-gray-800">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3 mb-2">
+            <button onClick={onBack} className="text-gray-500 hover:text-white transition-colors text-sm">←</button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 text-xs text-gray-600 mb-0.5">
+                <span className="text-gray-400">{stage.icon} {stage.title}</span>
+                <span>·</span>
+                <span>{typeLabel[lesson.type]}</span>
+                <span>·</span>
+                <span>{lessonIdx + 1}/{totalLessons}</span>
+              </div>
+              <h1 className="text-white font-bold text-sm leading-tight truncate">{lesson.title}</h1>
             </div>
-            <h1 className="font-bold text-white text-lg leading-tight">{lesson.title}</h1>
+            {done && <span className="text-green-400 text-xs flex-shrink-0 flex items-center gap-1">✓ Готово</span>}
           </div>
-          {done && (
-            <span className="text-green-400 text-sm flex items-center gap-1">
-              <span className="w-5 h-5 rounded-full bg-green-900 flex items-center justify-center text-xs">✓</span>
-              Готово
-            </span>
-          )}
-        </div>
-        <div className="max-w-3xl mx-auto mt-2">
-          <div className="h-1 bg-gray-800 rounded-full">
+          <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full bg-gradient-to-r ${module.color} transition-all`}
-              style={{ width: `${((lessonIndex + (done ? 1 : 0)) / totalLessons) * 100}%` }}
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${pct}%`, background: stage.color }}
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 min-h-96">
-          {lesson.type === 'theory' && (
-            <TheoryLesson
-              content={lesson.content}
-              onComplete={handleComplete}
-            />
+      {/* Content */}
+      <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-5">
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 mb-4">
+          {lesson.type === 'theory' && lesson.content && (
+            <TheoryLesson content={lesson.content} onComplete={handleDone} />
           )}
           {lesson.type === 'quiz' && lesson.quiz && (
-            <Quiz
-              questions={lesson.quiz}
-              onComplete={handleComplete}
-            />
+            <QuizLesson questions={lesson.quiz} onComplete={handleDone} />
           )}
-          {lesson.type === 'terminal' && lesson.terminalChallenge && (
-            <Terminal
-              challenge={lesson.terminalChallenge}
-              onComplete={handleComplete}
+          {lesson.type === 'terminal' && lesson.terminal && (
+            <TerminalLesson
+              intro={lesson.terminal.intro}
+              goal={lesson.terminal.goal}
+              steps={lesson.terminal.steps}
+              onComplete={handleDone}
             />
           )}
         </div>
 
-        {done && lessonIndex < totalLessons - 1 && (
+        {done && lessonIdx < totalLessons - 1 && (
           <button
             onClick={onNext}
-            className="mt-4 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors text-lg"
+            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-colors text-base"
           >
             Следующий урок →
           </button>
         )}
-        {done && lessonIndex === totalLessons - 1 && (
+        {done && lessonIdx === totalLessons - 1 && (
           <button
             onClick={onBack}
-            className="mt-4 w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold rounded-xl transition-colors text-lg"
+            className="w-full py-4 bg-green-700 hover:bg-green-600 text-white font-bold rounded-2xl transition-colors text-base"
           >
-            🎉 Модуль завершён! Вернуться к курсам
+            🎉 Раздел завершён!
           </button>
         )}
       </div>

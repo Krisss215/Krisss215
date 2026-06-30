@@ -1,209 +1,174 @@
-import React, { useState } from 'react';
-import { modules } from './data/modules';
+import React, { useState, useCallback } from 'react';
+import { Stage } from './types';
+import { STAGES } from './data/stages';
 import { useProgress } from './hooks/useProgress';
-import { ModuleCard } from './components/ModuleCard';
-import { ModuleView } from './components/ModuleView';
+import { RoadmapView } from './components/RoadmapView';
+import { StageView } from './components/StageView';
 import { LessonView } from './components/LessonView';
-import { Dashboard } from './components/Dashboard';
-import { Module } from './types';
+import { ProfileView } from './components/ProfileView';
 
 type Screen =
-  | { type: 'home' }
-  | { type: 'module'; module: Module }
-  | { type: 'lesson'; module: Module; lessonIndex: number }
-  | { type: 'dashboard' };
+  | { type: 'roadmap' }
+  | { type: 'stage'; stage: Stage }
+  | { type: 'lesson'; stage: Stage; lessonIdx: number }
+  | { type: 'profile' };
 
-function Toast({ message }: { message: string }) {
-  return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 border border-gray-700 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium">
-      {message}
-    </div>
-  );
-}
+interface Toast { id: number; msg: string; type: 'success' | 'xp' | 'achievement' }
+
+let toastId = 0;
 
 export default function App() {
-  const { progress, completeLesson, resetProgress } = useProgress();
-  const [screen, setScreen] = useState<Screen>({ type: 'home' });
-  const [activeTab, setActiveTab] = useState<'courses' | 'progress'>('courses');
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const { progress, completeLesson, reset } = useProgress();
+  const [screen, setScreen] = useState<Screen>({ type: 'roadmap' });
+  const [tab, setTab] = useState<'roadmap' | 'profile'>('roadmap');
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3000);
-  };
+  const addToast = useCallback((msg: string, type: Toast['type'] = 'success') => {
+    const id = ++toastId;
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
+  }, []);
 
-  const handleCompleteLesson = (module: Module, lessonIndex: number) => {
-    const lesson = module.lessons[lessonIndex];
-    const allIds = module.lessons.map(l => l.id);
-    const alreadyCompleted = progress.completedLessons.includes(lesson.id);
-    const updatedCompleted = alreadyCompleted
-      ? progress.completedLessons
-      : [...progress.completedLessons, lesson.id];
-    const nowModuleDone = allIds.every(id => updatedCompleted.includes(id));
-    const wasModuleDone = progress.completedModules.includes(module.id);
+  const handleCompleteLesson = useCallback((stage: Stage, lessonIdx: number) => {
+    const lesson = stage.lessons[lessonIdx];
+    const allIds = stage.lessons.map(l => l.id);
+    const xpGain = Math.round(stage.xpReward / stage.lessons.length);
 
-    completeLesson(lesson.id, module.id, allIds);
+    if (progress.completedLessons.includes(lesson.id)) return;
 
-    if (nowModuleDone && !wasModuleDone) {
-      showToast(`🎉 Модуль "${module.title}" завершён! +200 очков`);
-    } else if (!alreadyCompleted) {
-      showToast(`✅ Урок завершён! +100 очков`);
+    const { stageCompleted, newAchievements } = completeLesson(lesson.id, stage.id, allIds, xpGain);
+
+    addToast(`+${xpGain} XP`, 'xp');
+
+    if (stageCompleted) {
+      setTimeout(() => addToast(`🏆 Раздел «${stage.title}» завершён! +100 бонус XP`, 'success'), 500);
+      const nextStage = STAGES.find(s => s.requiresStage === stage.id);
+      if (nextStage) {
+        setTimeout(() => addToast(`🔓 Разблокирован: ${nextStage.icon} ${nextStage.title}`, 'achievement'), 1200);
+      }
     }
-  };
 
-  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0);
-  const completedCount = progress.completedLessons.length;
+    newAchievements.forEach((achId, i) => {
+      const ach = (require('./data/achievements').ACHIEVEMENTS as any[]).find((a: any) => a.id === achId);
+      if (ach) setTimeout(() => addToast(`🏅 Достижение: ${ach.title}`, 'achievement'), 800 + i * 700);
+    });
+  }, [progress, completeLesson, addToast]);
+
+  const goTo = useCallback((s: Screen) => {
+    setScreen(s);
+    if (s.type === 'roadmap' || s.type === 'profile') {
+      setTab(s.type === 'profile' ? 'profile' : 'roadmap');
+    }
+  }, []);
 
   if (screen.type === 'lesson') {
-    const { module, lessonIndex } = screen;
-    const lesson = module.lessons[lessonIndex];
+    const { stage, lessonIdx } = screen;
+    const lesson = stage.lessons[lessonIdx];
     return (
       <>
         <LessonView
           lesson={lesson}
-          module={module}
-          lessonIndex={lessonIndex}
-          totalLessons={module.lessons.length}
+          stage={stage}
+          lessonIdx={lessonIdx}
+          totalLessons={stage.lessons.length}
           isCompleted={progress.completedLessons.includes(lesson.id)}
-          onComplete={() => handleCompleteLesson(module, lessonIndex)}
-          onBack={() => setScreen({ type: 'module', module })}
+          onComplete={() => handleCompleteLesson(stage, lessonIdx)}
+          onBack={() => goTo({ type: 'stage', stage })}
           onNext={() => {
-            if (lessonIndex + 1 < module.lessons.length) {
-              setScreen({ type: 'lesson', module, lessonIndex: lessonIndex + 1 });
+            if (lessonIdx + 1 < stage.lessons.length) {
+              goTo({ type: 'lesson', stage, lessonIdx: lessonIdx + 1 });
             } else {
-              setScreen({ type: 'module', module });
+              goTo({ type: 'stage', stage });
             }
           }}
         />
-        {toastMsg && <Toast message={toastMsg} />}
+        <ToastStack toasts={toasts} />
       </>
     );
   }
 
-  if (screen.type === 'module') {
-    const { module } = screen;
+  if (screen.type === 'stage') {
     return (
       <>
-        <ModuleView
-          module={module}
-          completedLessons={progress.completedLessons}
-          onSelectLesson={(idx) => setScreen({ type: 'lesson', module, lessonIndex: idx })}
-          onBack={() => setScreen({ type: 'home' })}
+        <StageView
+          stage={screen.stage}
+          progress={progress}
+          onSelectLesson={idx => goTo({ type: 'lesson', stage: screen.stage, lessonIdx: idx })}
+          onBack={() => goTo({ type: 'roadmap' })}
         />
-        {toastMsg && <Toast message={toastMsg} />}
+        <ToastStack toasts={toasts} />
       </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 flex flex-col">
+      {/* Header */}
       <header className="sticky top-0 z-20 bg-gray-900/95 backdrop-blur border-b border-gray-800">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-lg">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-lg shadow-lg">
               🛡️
             </div>
             <div>
-              <h1 className="font-bold text-white text-sm leading-none">CyberSec Academy</h1>
-              <p className="text-xs text-gray-500">Кибербезопасность для всех</p>
+              <p className="font-bold text-white text-sm leading-none">CyberPath</p>
+              <p className="text-xs text-gray-500">От нуля до профи</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-sm">
-              <span>🔥</span>
-              <span className="text-gray-300 font-semibold">{progress.streak}</span>
-            </div>
-            <div className="flex items-center gap-1 text-sm">
-              <span>⭐</span>
-              <span className="text-gray-300 font-semibold">{progress.score}</span>
-            </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="flex items-center gap-1 text-orange-400 font-semibold">🔥 {progress.streak}</span>
+            <span className="flex items-center gap-1 text-yellow-400 font-semibold">⭐ {progress.xp}</span>
           </div>
         </div>
-      </header>
-
-      <div className="sticky top-[57px] z-10 bg-gray-900 border-b border-gray-800">
-        <div className="max-w-3xl mx-auto px-4 flex">
-          {(['courses', 'progress'] as const).map(tab => (
+        <div className="max-w-2xl mx-auto px-4 flex border-t border-gray-800">
+          {([['roadmap', '🗺️ Роадмап'], ['profile', '👤 Профиль']] as const).map(([t, label]) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab
-                  ? 'border-indigo-500 text-indigo-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
+              key={t}
+              onClick={() => { setTab(t); goTo({ type: t }); }}
+              className={`flex-1 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                tab === t ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-300'
               }`}
             >
-              {tab === 'courses' ? '📚 Курсы' : '📊 Прогресс'}
+              {label}
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
-      {activeTab === 'courses' ? (
-        <main className="max-w-3xl mx-auto px-4 py-6">
-          <div className="bg-gradient-to-br from-indigo-900/60 to-purple-900/60 rounded-2xl border border-indigo-800/50 p-6 mb-6">
-            <div className="flex items-start gap-4">
-              <div className="text-4xl">🔐</div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-white mb-1">Изучи кибербезопасность</h2>
-                <p className="text-gray-400 text-sm mb-4">
-                  От основ до продвинутых техник. Интерактивные уроки, терминальные задания и тесты.
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-2 bg-gray-800 rounded-full">
-                    <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700"
-                      style={{ width: `${Math.round((completedCount / totalLessons) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-sm text-gray-300 font-semibold whitespace-nowrap">
-                    {completedCount}/{totalLessons} уроков
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+      <main className="flex-1">
+        {tab === 'roadmap' ? (
+          <RoadmapView
+            progress={progress}
+            onSelectStage={stage => goTo({ type: 'stage', stage })}
+          />
+        ) : (
+          <ProfileView progress={progress} onReset={reset} />
+        )}
+      </main>
 
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {[
-              { label: 'Модулей', value: modules.length, icon: '📦' },
-              { label: 'Уроков', value: totalLessons, icon: '📖' },
-              { label: 'Очков', value: progress.score, icon: '🏆' },
-            ].map(s => (
-              <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-                <div className="text-xl mb-1">{s.icon}</div>
-                <div className="font-bold text-white text-lg">{s.value}</div>
-                <div className="text-xs text-gray-500">{s.label}</div>
-              </div>
-            ))}
-          </div>
+      <ToastStack toasts={toasts} />
+    </div>
+  );
+}
 
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white">Все курсы</h2>
-            <span className="text-sm text-gray-500">{modules.length} модулей</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {modules.map(mod => (
-              <ModuleCard
-                key={mod.id}
-                module={mod}
-                completedLessons={progress.completedLessons}
-                isCompleted={progress.completedModules.includes(mod.id)}
-                onClick={() => setScreen({ type: 'module', module: mod })}
-              />
-            ))}
-          </div>
-
-          <div className="mt-8 text-center text-gray-600 text-xs">
-            <p>CyberSec Academy — учись, практикуйся, защищай</p>
-            <p className="mt-1">⚠️ Используй знания только в законных целях!</p>
-          </div>
-        </main>
-      ) : (
-        <Dashboard progress={progress} onReset={resetProgress} />
-      )}
-
-      {toastMsg && <Toast message={toastMsg} />}
+function ToastStack({ toasts }: { toasts: Toast[] }) {
+  if (!toasts.length) return null;
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none">
+      {toasts.map(t => (
+        <div
+          key={t.id}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold shadow-2xl border transition-all ${
+            t.type === 'xp'
+              ? 'bg-yellow-900 border-yellow-700 text-yellow-300'
+              : t.type === 'achievement'
+              ? 'bg-purple-900 border-purple-700 text-purple-200'
+              : 'bg-gray-800 border-gray-700 text-white'
+          }`}
+        >
+          {t.msg}
+        </div>
+      ))}
     </div>
   );
 }

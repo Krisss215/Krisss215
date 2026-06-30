@@ -1,22 +1,6 @@
-export interface Module {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  color: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  lessons: Lesson[];
-}
-
-export interface Lesson {
-  id: string;
-  title: string;
-  content: string;
-  type: 'theory' | 'quiz' | 'terminal' | 'challenge';
-  quiz?: QuizQuestion[];
-  terminalChallenge?: TerminalChallenge;
-  codeChallenge?: CodeChallenge;
-}
+export type Difficulty = 'zero' | 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type LessonType = 'theory' | 'quiz' | 'terminal' | 'practice';
+export type CareerTrack = 'blue' | 'red' | 'general';
 
 export interface QuizQuestion {
   id: string;
@@ -26,26 +10,53 @@ export interface QuizQuestion {
   explanation: string;
 }
 
-export interface TerminalChallenge {
-  description: string;
-  commands: { cmd: string; output: string; hint?: string }[];
-  goal: string;
-}
-
-export interface CodeChallenge {
-  description: string;
-  starterCode: string;
-  solution: string;
+export interface TerminalStep {
+  cmd: string;
+  output: string;
   hint: string;
 }
 
+export interface Lesson {
+  id: string;
+  title: string;
+  duration: number; // minutes
+  type: LessonType;
+  content?: string;
+  quiz?: QuizQuestion[];
+  terminal?: {
+    intro: string;
+    goal: string;
+    steps: TerminalStep[];
+  };
+}
+
+export interface Stage {
+  id: string;
+  order: number;
+  title: string;
+  subtitle: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  difficulty: Difficulty;
+  xpReward: number;
+  requiresStage?: string;
+  track: CareerTrack;
+  description: string;
+  skills: string[];
+  lessons: Lesson[];
+}
+
 export interface UserProgress {
+  xp: number;
+  level: number;
   completedLessons: string[];
-  completedModules: string[];
-  score: number;
+  completedStages: string[];
   achievements: string[];
   streak: number;
   lastActiveDate: string;
+  selectedTrack?: CareerTrack;
+  startedAt: string;
 }
 
 export interface Achievement {
@@ -53,5 +64,13 @@ export interface Achievement {
   title: string;
   description: string;
   icon: string;
-  condition: (progress: UserProgress) => boolean;
+  xp: number;
+  check: (p: UserProgress) => boolean;
+}
+
+export interface Rank {
+  minXp: number;
+  title: string;
+  icon: string;
+  color: string;
 }

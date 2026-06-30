@@ -1,23 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserProgress } from '../types';
-import { achievements } from '../data/achievements';
+import { ACHIEVEMENTS } from '../data/achievements';
 
-const STORAGE_KEY = 'cybersec_progress';
+const KEY = 'cybersec_pro_v2';
 
-const defaultProgress: UserProgress = {
+const init: UserProgress = {
+  xp: 0,
+  level: 1,
   completedLessons: [],
-  completedModules: [],
-  score: 0,
+  completedStages: [],
   achievements: [],
   streak: 1,
   lastActiveDate: new Date().toDateString(),
+  startedAt: new Date().toISOString(),
 };
 
 export function useProgress() {
   const [progress, setProgress] = useState<UserProgress>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const p = JSON.parse(stored) as UserProgress;
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return init;
+      const p = JSON.parse(raw) as UserProgress;
       const today = new Date().toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
       if (p.lastActiveDate === yesterday) {
@@ -28,49 +31,62 @@ export function useProgress() {
         p.lastActiveDate = today;
       }
       return p;
+    } catch {
+      return init;
     }
-    return defaultProgress;
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    localStorage.setItem(KEY, JSON.stringify(progress));
   }, [progress]);
 
   const checkAchievements = useCallback((p: UserProgress): string[] => {
-    const newAchievements: string[] = [];
-    for (const a of achievements) {
-      if (!p.achievements.includes(a.id) && a.condition(p)) {
-        newAchievements.push(a.id);
-      }
-    }
-    return newAchievements;
+    return ACHIEVEMENTS
+      .filter(a => !p.achievements.includes(a.id) && a.check(p))
+      .map(a => a.id);
   }, []);
 
-  const completeLesson = useCallback((lessonId: string, moduleId: string, moduleLessonIds: string[], points = 100) => {
+  const completeLesson = useCallback((
+    lessonId: string,
+    stageId: string,
+    stageLessonIds: string[],
+    xpGain: number,
+  ): { newAchievements: string[]; stageCompleted: boolean } => {
+    let newAchievements: string[] = [];
+    let stageCompleted = false;
+
     setProgress(prev => {
       if (prev.completedLessons.includes(lessonId)) return prev;
-      const newCompleted = [...prev.completedLessons, lessonId];
-      const allDone = moduleLessonIds.every(id => newCompleted.includes(id));
-      const newModules = allDone && !prev.completedModules.includes(moduleId)
-        ? [...prev.completedModules, moduleId]
-        : prev.completedModules;
+
+      const newLessons = [...prev.completedLessons, lessonId];
+      const allStageDone = stageLessonIds.every(id => newLessons.includes(id));
+      const newStages = allStageDone && !prev.completedStages.includes(stageId)
+        ? [...prev.completedStages, stageId]
+        : prev.completedStages;
+
+      stageCompleted = allStageDone && !prev.completedStages.includes(stageId);
+
+      const newXp = prev.xp + xpGain + (stageCompleted ? 100 : 0);
+      const newLevel = Math.floor(newXp / 300) + 1;
 
       const updated: UserProgress = {
         ...prev,
-        completedLessons: newCompleted,
-        completedModules: newModules,
-        score: prev.score + points + (allDone ? 200 : 0),
+        xp: newXp,
+        level: newLevel,
+        completedLessons: newLessons,
+        completedStages: newStages,
         lastActiveDate: new Date().toDateString(),
       };
-      const newAch = checkAchievements(updated);
-      updated.achievements = [...prev.achievements, ...newAch];
+
+      newAchievements = checkAchievements(updated);
+      updated.achievements = [...prev.achievements, ...newAchievements];
       return updated;
     });
+
+    return { newAchievements, stageCompleted };
   }, [checkAchievements]);
 
-  const resetProgress = useCallback(() => {
-    setProgress(defaultProgress);
-  }, []);
+  const reset = useCallback(() => setProgress({ ...init, startedAt: new Date().toISOString() }), []);
 
-  return { progress, completeLesson, resetProgress };
+  return { progress, completeLesson, reset };
 }
