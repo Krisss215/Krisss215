@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "CyberPath Academy",
+    "slug": "cyberpath-academy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#030712",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#030712"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cyberpath.academy",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Not required",
+        "UIBackgroundModes": []
+      }
+    },
+    "android": {
+      "package": "com.cyberpath.academy",
+      "adaptiveIcon": {
+        "backgroundColor": "#030712",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
