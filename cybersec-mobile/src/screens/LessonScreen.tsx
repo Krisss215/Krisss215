@@ -7,7 +7,7 @@ import { QuizLesson } from '../components/QuizLesson';
 import { TerminalLesson } from '../components/TerminalLesson';
 
 const TYPE_ICON: Record<string, string> = { theory: '📖', quiz: '🧠', terminal: '💻' };
-const TYPE_LABEL: Record<string, string> = { theory: 'Теория', quiz: 'Тест', terminal: 'Терминал' };
+const TYPE_LABEL: Record<string, string> = { theory: 'Theory', quiz: 'Quiz', terminal: 'Terminal' };
 
 interface Props {
   lesson: Lesson;
@@ -34,7 +34,7 @@ export function LessonScreen({ lesson, stage, lessonIndex, totalLessons, onCompl
             <Text style={s.typeIcon}>{TYPE_ICON[lesson.type]}</Text>
             <Text style={s.metaText}>{TYPE_LABEL[lesson.type]}</Text>
             <Text style={s.metaDot}>·</Text>
-            <Text style={s.metaText}>~{lesson.duration} мин</Text>
+            <Text style={s.metaText}>~{lesson.duration} min</Text>
             <Text style={s.metaDot}>·</Text>
             <Text style={s.metaText}>{lessonIndex + 1}/{totalLessons}</Text>
           </View>

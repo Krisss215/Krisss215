@@ -40,7 +40,7 @@ export function QuizLesson({ lesson, onComplete }: Props) {
   if (questions.length === 0) {
     return (
       <View style={s.center}>
-        <Text style={s.emptyText}>Нет вопросов в этом тесте</Text>
+        <Text style={s.emptyText}>No questions in this quiz</Text>
       </View>
     );
   }
@@ -53,9 +53,9 @@ export function QuizLesson({ lesson, onComplete }: Props) {
         <View style={[s.resultBox, { borderColor: pass ? '#22c55e' : '#ef4444' }]}>
           <Text style={s.resultIcon}>{pass ? '🏆' : '📚'}</Text>
           <Text style={[s.resultScore, { color: pass ? '#4ade80' : '#f87171' }]}>{pct}%</Text>
-          <Text style={s.resultLabel}>{score} из {questions.length} верно</Text>
+          <Text style={s.resultLabel}>{score} of {questions.length} correct</Text>
           <Text style={s.resultMsg}>
-            {pass ? 'Отлично! Тест пройден.' : 'Не беспокойся, можно повторить.'}
+            {pass ? 'Great job! Quiz passed.' : "Don't worry, you can try again."}
           </Text>
         </View>
 
@@ -69,7 +69,7 @@ export function QuizLesson({ lesson, onComplete }: Props) {
         </View>
 
         <TouchableOpacity style={s.btn} onPress={onComplete}>
-          <Text style={s.btnText}>{pass ? 'Завершить урок' : 'Попробовать ещё раз'}</Text>
+          <Text style={s.btnText}>{pass ? 'Complete Lesson' : 'Try Again'}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 32 }} />
@@ -89,7 +89,7 @@ export function QuizLesson({ lesson, onComplete }: Props) {
 
       {/* Question */}
       <View style={s.questionBox}>
-        <Text style={s.questionNum}>Вопрос {current + 1}</Text>
+        <Text style={s.questionNum}>Question {current + 1}</Text>
         <Text style={s.questionText}>{q.question}</Text>
       </View>
 
@@ -143,7 +143,7 @@ export function QuizLesson({ lesson, onComplete }: Props) {
       {selected !== null && (
         <TouchableOpacity style={s.btn} onPress={next}>
           <Text style={s.btnText}>
-            {current + 1 < questions.length ? 'Следующий вопрос →' : 'Посмотреть результат'}
+            {current + 1 < questions.length ? 'Next Question →' : 'See Results'}
           </Text>
         </TouchableOpacity>
       )}

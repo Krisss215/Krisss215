@@ -92,7 +92,7 @@ export function TheoryLesson({ lesson, onComplete }: Props) {
     <ScrollView style={{ flex: 1 }} contentContainerStyle={s.container} showsVerticalScrollIndicator={false}>
       {blocks}
       <View style={s.completeBtn}>
-        <Text style={s.completeBtnText} onPress={onComplete}>Завершить урок ✓</Text>
+        <Text style={s.completeBtnText} onPress={onComplete}>Complete Lesson ✓</Text>
       </View>
       <View style={{ height: 32 }} />
     </ScrollView>

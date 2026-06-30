@@ -28,11 +28,11 @@ export function ProfileScreen({ progress, onReset }: Props) {
 
   function handleReset() {
     Alert.alert(
-      'Сбросить прогресс?',
-      'Весь прогресс, XP и достижения будут удалены. Это действие нельзя отменить.',
+      'Reset Progress?',
+      'All progress, XP and achievements will be deleted. This cannot be undone.',
       [
-        { text: 'Отмена', style: 'cancel' },
-        { text: 'Сбросить', style: 'destructive', onPress: onReset },
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Reset', style: 'destructive', onPress: onReset },
       ]
     );
   }
@@ -46,14 +46,14 @@ export function ProfileScreen({ progress, onReset }: Props) {
           <Text style={s.rankIconText}>{rank.icon}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={s.rankLabel}>Текущий ранг</Text>
+          <Text style={s.rankLabel}>Current rank</Text>
           <Text style={[s.rankTitle, { color: rank.color }]}>{rank.title}</Text>
-          <Text style={s.rankXp}>{progress.xp} XP заработано</Text>
+          <Text style={s.rankXp}>{progress.xp} XP earned</Text>
         </View>
         <View style={s.streakBox}>
           <Text style={s.streakFire}>🔥</Text>
           <Text style={s.streakNum}>{progress.streak}</Text>
-          <Text style={s.streakSub}>дней</Text>
+          <Text style={s.streakSub}>days</Text>
         </View>
       </View>
 
@@ -61,7 +61,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
       {nextRank && (
         <View style={s.xpWrap}>
           <View style={s.xpBarRow}>
-            <Text style={s.xpBarLabel}>До «{nextRank.title}»</Text>
+            <Text style={s.xpBarLabel}>Until "{nextRank.title}"</Text>
             <Text style={s.xpBarLabel}>{nextRank.minXp - progress.xp} XP</Text>
           </View>
           <View style={s.xpTrack}>
@@ -73,10 +73,10 @@ export function ProfileScreen({ progress, onReset }: Props) {
       {/* Stats */}
       <View style={s.statsRow}>
         {[
-          { v: `${progress.completedLessons.length}/${totalLessons}`, l: 'Уроков' },
-          { v: progress.completedStages.length, l: 'Разделов' },
-          { v: progress.achievements.length, l: 'Достижений' },
-          { v: daysSince, l: 'Дней в пути' },
+          { v: `${progress.completedLessons.length}/${totalLessons}`, l: 'Lessons' },
+          { v: progress.completedStages.length, l: 'Stages' },
+          { v: progress.achievements.length, l: 'Achievements' },
+          { v: daysSince, l: 'Days Learning' },
         ].map(stat => (
           <View key={stat.l} style={s.statBox}>
             <Text style={s.statVal}>{stat.v}</Text>
@@ -86,7 +86,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
       </View>
 
       {/* Rank ladder */}
-      <Text style={s.sectionTitle}>Лестница рангов</Text>
+      <Text style={s.sectionTitle}>Rank Ladder</Text>
       <View style={s.rankLadder}>
         {RANKS.map((r, i) => {
           const earned = progress.xp >= r.minXp;
@@ -104,7 +104,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
                 <Text style={s.rankRowXp}>{r.minXp} XP</Text>
               </View>
               {isCurrent && <View style={[s.currentBadge, { backgroundColor: r.color + '22' }]}>
-                <Text style={[s.currentBadgeText, { color: r.color }]}>Сейчас</Text>
+                <Text style={[s.currentBadgeText, { color: r.color }]}>Current</Text>
               </View>}
               {earned && !isCurrent && <Text style={s.checkMark}>✓</Text>}
             </View>
@@ -113,7 +113,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
       </View>
 
       {/* Achievements */}
-      <Text style={s.sectionTitle}>Достижения</Text>
+      <Text style={s.sectionTitle}>Achievements</Text>
       <View style={s.achievGrid}>
         {ACHIEVEMENTS.map(a => {
           const earned = progress.achievements.includes(a.id);
@@ -128,7 +128,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
       </View>
 
       {/* Stage progress */}
-      <Text style={s.sectionTitle}>Прогресс по разделам</Text>
+      <Text style={s.sectionTitle}>Stage Progress</Text>
       {STAGES.map(stage => {
         const done = stage.lessons.filter(l => progress.completedLessons.includes(l.id)).length;
         const pct = (done / stage.lessons.length) * 100;
@@ -149,7 +149,7 @@ export function ProfileScreen({ progress, onReset }: Props) {
 
       {/* Reset */}
       <TouchableOpacity style={s.resetBtn} onPress={handleReset}>
-        <Text style={s.resetText}>Сбросить прогресс</Text>
+        <Text style={s.resetText}>Reset Progress</Text>
       </TouchableOpacity>
 
       <View style={{ height: 32 }} />

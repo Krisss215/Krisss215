@@ -7,7 +7,7 @@ import { Stage, UserProgress } from '../types';
 import { C } from '../theme';
 
 const TYPE_ICON: Record<string, string> = { theory: '📖', quiz: '🧠', terminal: '💻', practice: '⚔️' };
-const TYPE_LABEL: Record<string, string> = { theory: 'Теория', quiz: 'Тест', terminal: 'Терминал', practice: 'Практика' };
+const TYPE_LABEL: Record<string, string> = { theory: 'Theory', quiz: 'Quiz', terminal: 'Terminal', practice: 'Practice' };
 
 interface Props {
   stage: Stage;
@@ -61,13 +61,13 @@ export function StageScreen({ stage, progress, onSelectLesson, onBack }: Props) 
         <View style={styles.rewardBox}>
           <Text style={styles.rewardIcon}>🏆</Text>
           <View>
-            <Text style={styles.rewardTitle}>Награда за раздел</Text>
-            <Text style={styles.rewardSub}>+{stage.xpReward} XP + разблокировка следующего</Text>
+            <Text style={styles.rewardTitle}>Stage Reward</Text>
+            <Text style={styles.rewardSub}>+{stage.xpReward} XP + unlocks the next stage</Text>
           </View>
         </View>
 
         {/* Lessons */}
-        <Text style={styles.listTitle}>Программа раздела</Text>
+        <Text style={styles.listTitle}>Stage Curriculum</Text>
         {stage.lessons.map((lesson, idx) => {
           const done = progress.completedLessons.includes(lesson.id);
           return (
@@ -85,8 +85,8 @@ export function StageScreen({ stage, progress, onSelectLesson, onBack }: Props) 
                 <View style={styles.lessonMeta}>
                   <Text style={styles.metaText}>{TYPE_LABEL[lesson.type]}</Text>
                   <Text style={styles.metaDot}>·</Text>
-                  <Text style={styles.metaText}>~{lesson.duration} мин</Text>
-                  {done && <><Text style={styles.metaDot}>·</Text><Text style={styles.doneTxt}>Завершён</Text></>}
+                  <Text style={styles.metaText}>~{lesson.duration} min</Text>
+                  {done && <><Text style={styles.metaDot}>·</Text><Text style={styles.doneTxt}>Completed</Text></>}
                 </View>
               </View>
               <Text style={styles.arrow}>›</Text>

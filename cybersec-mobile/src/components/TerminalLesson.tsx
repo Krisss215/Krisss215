@@ -21,7 +21,7 @@ export function TerminalLesson({ lesson, onComplete }: Props) {
     { type: 'hint', text: `# ${terminal?.intro ?? lesson.title}` },
     { type: 'out', text: `Цель: ${terminal?.goal ?? ''}` },
     { type: 'out', text: '' },
-    { type: 'hint', text: steps[0] ? `▶ Введи: ${steps[0].cmd}` : '' },
+    { type: 'hint', text: steps[0] ? `▶ Type:${steps[0].cmd}` : '' },
   ]);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
@@ -48,16 +48,16 @@ export function TerminalLesson({ lesson, onComplete }: Props) {
         const nextIdx = stepIdx + 1;
         if (nextIdx >= steps.length) {
           newLines.push({ type: 'out', text: '' });
-          newLines.push({ type: 'out', text: '✅ Все задания выполнены! Отличная работа.' });
+          newLines.push({ type: 'out', text: '✅ All tasks completed! Great work.' });
           setDone(true);
         } else {
           newLines.push({ type: 'out', text: '' });
-          newLines.push({ type: 'hint', text: `▶ Введи: ${steps[nextIdx].cmd}` });
+          newLines.push({ type: 'hint', text: `▶ Type:${steps[nextIdx].cmd}` });
           setStepIdx(nextIdx);
         }
       } else {
-        newLines.push({ type: 'err', text: `bash: ${cmd}: команда не найдена` });
-        newLines.push({ type: 'hint', text: `💡 Попробуй: ${step.cmd}` });
+        newLines.push({ type: 'err', text: `bash: ${cmd}: command not found` });
+        newLines.push({ type: 'hint', text: `💡 Try: ${step.cmd}` });
       }
     }
 
@@ -118,7 +118,7 @@ export function TerminalLesson({ lesson, onComplete }: Props) {
             autoCorrect={false}
             spellCheck={false}
             placeholderTextColor={C.textMut}
-            placeholder="введи команду..."
+            placeholder="type a command..."
             selectionColor={C.indigo}
           />
           <TouchableOpacity onPress={submit} style={s.sendBtn}>
@@ -127,7 +127,7 @@ export function TerminalLesson({ lesson, onComplete }: Props) {
         </View>
       ) : (
         <TouchableOpacity style={s.completeBtn} onPress={onComplete}>
-          <Text style={s.completeBtnText}>Завершить урок ✓</Text>
+          <Text style={s.completeBtnText}>Complete Lesson ✓</Text>
         </TouchableOpacity>
       )}
     </KeyboardAvoidingView>

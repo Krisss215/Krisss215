@@ -49,9 +49,9 @@ export default function App() {
       Math.round(selectedStage.xpReward / selectedStage.lessons.length),
     );
 
-    if (stageCompleted) showToast(`🏆 Раздел завершён! +${selectedStage.xpReward} XP`);
-    else if (newAchievements.length > 0) showToast(`🎖 Новое достижение!`);
-    else showToast('✓ Урок завершён!');
+    if (stageCompleted) showToast(`🏆 Stage completed! +${selectedStage.xpReward} XP`);
+    else if (newAchievements.length > 0) showToast(`🎖 New achievement unlocked!`);
+    else showToast('✓ Lesson complete!');
 
     // Go back to stage screen
     setModal('stage');
@@ -87,7 +87,7 @@ export default function App() {
           activeOpacity={0.7}
         >
           <Text style={[styles.tabIcon, tab === 'roadmap' && styles.tabIconActive]}>🗺</Text>
-          <Text style={[styles.tabLabel, tab === 'roadmap' && styles.tabLabelActive]}>Роадмап</Text>
+          <Text style={[styles.tabLabel, tab === 'roadmap' && styles.tabLabelActive]}>Roadmap</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tabItem}
@@ -95,7 +95,7 @@ export default function App() {
           activeOpacity={0.7}
         >
           <Text style={[styles.tabIcon, tab === 'profile' && styles.tabIconActive]}>👤</Text>
-          <Text style={[styles.tabLabel, tab === 'profile' && styles.tabLabelActive]}>Профиль</Text>
+          <Text style={[styles.tabLabel, tab === 'profile' && styles.tabLabelActive]}>Profile</Text>
         </TouchableOpacity>
       </View>
 

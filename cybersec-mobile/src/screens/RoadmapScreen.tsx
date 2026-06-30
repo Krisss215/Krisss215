@@ -11,8 +11,8 @@ import { C } from '../theme';
 const { width } = Dimensions.get('window');
 
 const DIFF_LABEL: Record<string, string> = {
-  zero: 'С нуля', beginner: 'Начальный',
-  intermediate: 'Средний', advanced: 'Продвинутый', expert: 'Эксперт',
+  zero: 'From Zero', beginner: 'Beginner',
+  intermediate: 'Intermediate', advanced: 'Advanced', expert: 'Expert',
 };
 const DIFF_COLOR: Record<string, string> = {
   zero: '#6b7280', beginner: '#22c55e', intermediate: '#eab308',
@@ -54,21 +54,21 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
             <Text style={styles.rankIcon}>{rank.icon}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.rankLabel}>Твой ранг</Text>
+            <Text style={styles.rankLabel}>Your rank</Text>
             <Text style={[styles.rankTitle, { color: rank.color }]}>{rank.title}</Text>
-            <Text style={styles.rankXp}>{progress.xp} XP заработано</Text>
+            <Text style={styles.rankXp}>{progress.xp} XP earned</Text>
           </View>
           <View style={styles.streakBox}>
             <Text style={styles.streakFire}>🔥</Text>
             <Text style={styles.streakNum}>{progress.streak}</Text>
-            <Text style={styles.streakLabel}>дней</Text>
+            <Text style={styles.streakLabel}>days</Text>
           </View>
         </View>
 
         {nextRank && (
           <View style={{ marginTop: 12 }}>
             <View style={styles.xpBarRow}>
-              <Text style={styles.xpBarLabel}>До «{nextRank.title}»</Text>
+              <Text style={styles.xpBarLabel}>Until "{nextRank.title}"</Text>
               <Text style={styles.xpBarLabel}>{nextRank.minXp - progress.xp} XP</Text>
             </View>
             <View style={styles.xpTrack}>
@@ -79,9 +79,9 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
 
         <View style={styles.statsRow}>
           {[
-            { v: `${progress.completedLessons.length}/${totalLessons}`, l: 'Уроков' },
-            { v: progress.completedStages.length, l: 'Разделов' },
-            { v: progress.achievements.length, l: 'Достижений' },
+            { v: `${progress.completedLessons.length}/${totalLessons}`, l: 'Lessons' },
+            { v: progress.completedStages.length, l: 'Stages' },
+            { v: progress.achievements.length, l: 'Achievements' },
           ].map(s => (
             <View key={s.l} style={styles.statBox}>
               <Text style={styles.statVal}>{s.v}</Text>
@@ -92,8 +92,8 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
       </View>
 
       {/* Title */}
-      <Text style={styles.sectionTitle}>Путь от нуля до профи</Text>
-      <Text style={styles.sectionSub}>{STAGES.length} этапов · {totalLessons} уроков</Text>
+      <Text style={styles.sectionTitle}>Path from Zero to Pro</Text>
+      <Text style={styles.sectionSub}>{STAGES.length} stages · {totalLessons} lessons</Text>
 
       {/* Stages */}
       <View style={{ marginTop: 16 }}>
@@ -138,11 +138,11 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
                     <View style={[S_row, { gap: 6, flexWrap: 'wrap' }]}>
                       <Text style={styles.cardTitle}>{stage.title}</Text>
                       {status === 'done' && (
-                        <View style={styles.doneBadge}><Text style={styles.doneBadgeText}>Завершён</Text></View>
+                        <View style={styles.doneBadge}><Text style={styles.doneBadgeText}>Completed</Text></View>
                       )}
                       {status === 'active' && (
                         <View style={[styles.doneBadge, { backgroundColor: '#312e81' }]}>
-                          <Text style={[styles.doneBadgeText, { color: '#a5b4fc' }]}>В процессе</Text>
+                          <Text style={[styles.doneBadgeText, { color: '#a5b4fc' }]}>In Progress</Text>
                         </View>
                       )}
                     </View>
@@ -158,7 +158,7 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
                 <Text style={styles.cardDesc}>{stage.description}</Text>
 
                 <View style={[S_row, { gap: 8, flexWrap: 'wrap', marginTop: 8 }]}>
-                  <Text style={styles.metaText}>{stage.lessons.length} уроков</Text>
+                  <Text style={styles.metaText}>{stage.lessons.length} lessons</Text>
                   <Text style={[styles.metaText, { color: '#ca8a04' }]}>+{stage.xpReward} XP</Text>
                   {stage.skills.slice(0, 2).map(sk => (
                     <View key={sk} style={styles.skillChip}>
@@ -175,7 +175,7 @@ export function RoadmapScreen({ progress, onSelectStage }: Props) {
 
                 {locked && (
                   <Text style={styles.lockedText}>
-                    🔒 Сначала: «{STAGES.find(s => s.id === stage.requiresStage)?.title}»
+                    🔒 Complete first: "{STAGES.find(s => s.id === stage.requiresStage)?.title}"
                   </Text>
                 )}
               </TouchableOpacity>
