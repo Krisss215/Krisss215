@@ -1,6 +1,6 @@
 Hey, I'm Kris 
 
-Threat Researcher · Cyber & Information Security Engineer · CS Student(M.Sc)
+Threat Researcher · Cyber & Information Security Engineer · CS Student (M.Sc)
 
 I work in threat research, digging into the stuff most people hope never reaches them. By day I analyze threats and build defenses; by night I'm wrapping up my Master's in Computer Science (graduating 2028).
 
